@@ -5,16 +5,13 @@ from sqlalchemy.orm import DeclarativeBase
 
 load_dotenv()
 
-# Read DATABASE_URL from .env
-# Expected format: postgresql://user:password@localhost:5432/dbname
-# We convert it to the async driver format automatically
+
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set in your .env file")
 
-# SQLAlchemy needs asyncpg driver for async Postgres
-# Convert: postgresql://... → postgresql+asyncpg://...
+
 if DATABASE_URL.startswith("postgresql://"):
     ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 elif DATABASE_URL.startswith("postgresql+asyncpg://"):
@@ -29,18 +26,17 @@ engine = create_async_engine(
     pool_pre_ping=True  # Automatically reconnects if a DB connection drops
 )
 
-# Session factory — use this to get a DB session in your routes
+
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
     expire_on_commit=False  # Keeps objects accessible after commit, important in async context
 )
 
-# Base class all your models will inherit from
 class Base(DeclarativeBase):
     pass
 
-# Dependency for FastAPI routes — yields a session, closes it after the request
+
 async def get_db():
     async with AsyncSessionLocal() as session:
         try:

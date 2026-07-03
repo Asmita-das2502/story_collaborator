@@ -1,13 +1,6 @@
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
-let currentUser = null; // { id, name }
-let currentRoom = null; // { id, name }
-let allUsers = {}; // id → name map, for rendering messages
-
-// ─────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────
+let currentUser = null;
+let currentRoom = null;
+let allUsers = {};
 
 function showLoading(text = "Thinking...") {
   document.getElementById("loading-text").textContent = text;
@@ -26,10 +19,7 @@ function showError(elementId, message) {
 }
 
 async function api(method, path, body = null) {
-  const options = {
-    method,
-    headers: { "Content-Type": "application/json" },
-  };
+  const options = { method, headers: { "Content-Type": "application/json" } };
   if (body) options.body = JSON.stringify(body);
   const res = await fetch(path, options);
   if (!res.ok) {
@@ -39,58 +29,37 @@ async function api(method, path, body = null) {
   return res.json();
 }
 
-// ─────────────────────────────────────────────
-// SETUP: ENTER ROOM
-// ─────────────────────────────────────────────
-
+// SETUP
 document.getElementById("enter-btn").addEventListener("click", async () => {
   const userName = document.getElementById("user-name-input").value.trim();
   const roomName = document.getElementById("room-name-input").value.trim();
-
   if (!userName || !roomName) {
     showError("setup-error", "Please enter both your name and a room name.");
     return;
   }
-
   showLoading("Setting up your story room...");
-
   try {
-    // Create or get user
     let user;
     try {
       user = await api("POST", "/api/users", { name: userName });
     } catch (e) {
-      if (e.message.includes("already exists")) {
-        // User exists — find them
-        const users = await api("GET", "/api/users");
-        user = users.find((u) => u.name === userName);
-        if (!user) throw new Error("Could not find existing user.");
-      } else throw e;
+      const users = await api("GET", "/api/users");
+      user = users.find((u) => u.name === userName);
+      if (!user) throw new Error("Could not find or create user.");
     }
     currentUser = user;
-
-    // Create or get room
-    let room;
     const rooms = await api("GET", "/api/rooms");
-    room = rooms.find((r) => r.name === roomName);
-    if (!room) {
-      room = await api("POST", "/api/rooms", { name: roomName });
-    }
+    let room = rooms.find((r) => r.name === roomName);
+    if (!room) room = await api("POST", "/api/rooms", { name: roomName });
     currentRoom = room;
-
-    // Build user map for message rendering
     const allUsersArr = await api("GET", "/api/users");
     allUsersArr.forEach((u) => {
       allUsers[u.id] = u.name;
     });
-
-    // Enter the app
     document.getElementById("room-title").textContent = roomName;
     document.getElementById("user-badge").textContent = `👤 ${userName}`;
     document.getElementById("setup-screen").classList.add("hidden");
     document.getElementById("app-screen").classList.remove("hidden");
-
-    // Load existing messages
     await loadMessages();
   } catch (err) {
     showError("setup-error", err.message);
@@ -99,14 +68,9 @@ document.getElementById("enter-btn").addEventListener("click", async () => {
   }
 });
 
-// Allow Enter key on setup inputs
 document.getElementById("room-name-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter") document.getElementById("enter-btn").click();
 });
-
-// ─────────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────────
 
 document.querySelectorAll(".nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -118,16 +82,11 @@ document.querySelectorAll(".nav-btn").forEach((btn) => {
       p.classList.add("hidden");
     });
     btn.classList.add("active");
-    const panelId = "panel-" + btn.dataset.panel;
-    const panel = document.getElementById(panelId);
+    const panel = document.getElementById("panel-" + btn.dataset.panel);
     panel.classList.remove("hidden");
     panel.classList.add("active");
   });
 });
-
-// ─────────────────────────────────────────────
-// CHAT: LOAD & SEND MESSAGES
-// ─────────────────────────────────────────────
 
 async function loadMessages() {
   try {
@@ -140,13 +99,10 @@ async function loadMessages() {
 
 function renderMessages(messages) {
   const list = document.getElementById("messages-list");
-
   if (messages.length === 0) {
-    list.innerHTML =
-      '<div class="empty-state">No messages yet — start your story discussion!</div>';
+    list.innerHTML = '<div class="empty-state">No messages yet!</div>';
     return;
   }
-
   list.innerHTML = messages
     .map((msg) => {
       const isMe = msg.sender_id === currentUser.id;
@@ -154,18 +110,9 @@ function renderMessages(messages) {
       const cogneeTag = msg.fed_to_cognee
         ? '<div class="message-cognee">✓ remembered</div>'
         : "";
-
-      return `
-      <div class="message-bubble ${isMe ? "mine" : "theirs"}">
-        <div class="message-sender">${senderName}</div>
-        <div>${msg.content}</div>
-        ${cogneeTag}
-      </div>
-    `;
+      return `<div class="message-bubble ${isMe ? "mine" : "theirs"}"><div class="message-sender">${senderName}</div><div>${msg.content}</div>${cogneeTag}</div>`;
     })
     .join("");
-
-  // Scroll to bottom
   list.scrollTop = list.scrollHeight;
 }
 
@@ -181,10 +128,8 @@ async function sendMessage() {
   const input = document.getElementById("message-input");
   const content = input.value.trim();
   if (!content) return;
-
   input.value = "";
   showLoading("Sending and remembering...");
-
   try {
     await api("POST", "/api/messages", {
       room_id: currentRoom.id,
@@ -194,15 +139,11 @@ async function sendMessage() {
     await loadMessages();
   } catch (err) {
     console.error("Send failed:", err);
-    input.value = content; // Restore on failure
+    input.value = content;
   } finally {
     hideLoading();
   }
 }
-
-// ─────────────────────────────────────────────
-// SUMMARY
-// ─────────────────────────────────────────────
 
 document
   .getElementById("refresh-summary-btn")
@@ -220,14 +161,9 @@ document
     }
   });
 
-// ─────────────────────────────────────────────
-// CHAPTERS
-// ─────────────────────────────────────────────
-
 document.getElementById("draft-chapter-btn").addEventListener("click", () => {
   document.getElementById("draft-form").classList.toggle("hidden");
 });
-
 document.getElementById("cancel-draft-btn").addEventListener("click", () => {
   document.getElementById("draft-form").classList.add("hidden");
 });
@@ -240,25 +176,17 @@ document
     );
     const title =
       document.getElementById("chapter-title-input").value.trim() || null;
-
     if (!chapterNumber || chapterNumber < 1) {
       alert("Please enter a valid chapter number.");
       return;
     }
-
     showLoading("Pulling story memory and drafting chapter...");
-
     try {
-      const result = await api(
-        "POST",
-        `/api/rooms/${currentRoom.id}/draft-chapter`,
-        {
-          room_id: currentRoom.id,
-          chapter_number: chapterNumber,
-          title,
-        },
-      );
-
+      await api("POST", `/api/rooms/${currentRoom.id}/draft-chapter`, {
+        room_id: currentRoom.id,
+        chapter_number: chapterNumber,
+        title,
+      });
       document.getElementById("draft-form").classList.add("hidden");
       await loadChapters();
     } catch (err) {
@@ -280,38 +208,27 @@ async function loadChapters() {
 
 function renderChapters(chapters) {
   const list = document.getElementById("chapters-list");
-
   if (chapters.length === 0) {
-    list.innerHTML =
-      '<div class="empty-state">No chapters yet — draft your first one!</div>';
+    list.innerHTML = '<div class="empty-state">No chapters yet!</div>';
     return;
   }
-
   list.innerHTML = chapters
     .map(
       (ch) => `
     <div class="chapter-card">
       <div class="chapter-card-header">
-        <div class="chapter-card-title">
-          Chapter ${ch.chapter_number}${ch.title ? ": " + ch.title : ""}
-        </div>
+        <div class="chapter-card-title">Chapter ${ch.chapter_number}${ch.title ? ": " + ch.title : ""}</div>
         ${ch.is_draft ? '<span class="chapter-draft-badge">Draft</span>' : '<span class="chapter-draft-badge" style="background:#34d399">Final</span>'}
       </div>
       <div class="chapter-preview">${ch.content}</div>
-    </div>
-  `,
+    </div>`,
     )
     .join("");
 }
 
-// Load chapters when switching to chapters panel
 document
   .querySelector('[data-panel="chapters"]')
   .addEventListener("click", loadChapters);
-
-// ─────────────────────────────────────────────
-// RECALL / ASK MEMORY
-// ─────────────────────────────────────────────
 
 document.getElementById("recall-btn").addEventListener("click", askMemory);
 document.getElementById("recall-input").addEventListener("keydown", (e) => {
@@ -321,9 +238,7 @@ document.getElementById("recall-input").addEventListener("keydown", (e) => {
 async function askMemory() {
   const query = document.getElementById("recall-input").value.trim();
   if (!query) return;
-
   showLoading("Searching story memory...");
-
   try {
     const data = await api("POST", `/api/rooms/${currentRoom.id}/recall`, {
       query,
@@ -337,3 +252,60 @@ async function askMemory() {
     hideLoading();
   }
 }
+
+let activeSuggestionType = "plot";
+
+document.querySelectorAll(".suggestion-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document
+      .querySelectorAll(".suggestion-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeSuggestionType = btn.dataset.type;
+  });
+});
+
+document
+  .getElementById("get-suggestions-btn")
+  .addEventListener("click", async () => {
+    showLoading("Thinking about your story...");
+    try {
+      const data = await api(
+        "GET",
+        `/api/rooms/${currentRoom.id}/suggestions?suggestion_type=${activeSuggestionType}`,
+      );
+      const el = document.getElementById("suggestions-content");
+      if (!el) {
+        alert("suggestions-content element not found!");
+        return;
+      }
+      el.textContent = data.suggestions;
+      el.classList.remove("hidden");
+    } catch (err) {
+      console.error("Suggestions failed:", err);
+      alert("Error: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });
+
+document
+  .getElementById("refresh-threads-btn")
+  .addEventListener("click", async () => {
+    showLoading("Analysing story threads...");
+    try {
+      const data = await api("GET", `/api/rooms/${currentRoom.id}/threads`);
+      const el = document.getElementById("threads-content");
+      if (!el) {
+        alert("threads-content element not found!");
+        return;
+      }
+      el.textContent = data.threads;
+      el.classList.remove("hidden");
+    } catch (err) {
+      console.error("Threads failed:", err);
+      alert("Error: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });

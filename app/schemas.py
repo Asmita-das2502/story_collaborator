@@ -3,9 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-# ─────────────────────────────────────────────
-# User schemas
-# ─────────────────────────────────────────────
 class UserCreate(BaseModel):
     name: str
 
@@ -16,10 +13,6 @@ class UserResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# ─────────────────────────────────────────────
-# StoryRoom schemas
-# ─────────────────────────────────────────────
 class StoryRoomCreate(BaseModel):
     name: str
 
@@ -30,10 +23,6 @@ class StoryRoomResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# ─────────────────────────────────────────────
-# Message schemas
-# ─────────────────────────────────────────────
 class MessageCreate(BaseModel):
     room_id: str
     sender_id: str
@@ -49,10 +38,6 @@ class MessageResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# ─────────────────────────────────────────────
-# Chapter schemas
-# ─────────────────────────────────────────────
 class ChapterDraftRequest(BaseModel):
     room_id: str
     chapter_number: int
@@ -75,10 +60,6 @@ class ChapterResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
-
-# ─────────────────────────────────────────────
-# Summary schema
-# ─────────────────────────────────────────────
 class SummaryResponse(BaseModel):
     summary: str
     room_id: str

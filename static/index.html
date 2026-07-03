@@ -7,17 +7,14 @@
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <!-- SETUP SCREEN (shown first, before entering a room) -->
     <div id="setup-screen" class="screen">
       <div class="setup-card">
         <h1>📖 Story Collaborator</h1>
         <p class="subtitle">Write together. Remember everything.</p>
-
         <div class="form-group">
           <label>Your name</label>
           <input id="user-name-input" type="text" placeholder="e.g. Asmita" />
         </div>
-
         <div class="form-group">
           <label>Story room name</label>
           <input
@@ -30,36 +27,33 @@
             it.</small
           >
         </div>
-
         <button id="enter-btn" class="btn-primary">Enter Story Room →</button>
         <div id="setup-error" class="error-msg hidden"></div>
       </div>
     </div>
 
-    <!-- MAIN APP (shown after entering a room) -->
     <div id="app-screen" class="screen hidden">
-      <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-header">
           <h2 id="room-title">Room</h2>
           <span id="user-badge"></span>
         </div>
-
         <nav class="sidebar-nav">
           <button class="nav-btn active" data-panel="chat">💬 Chat</button>
           <button class="nav-btn" data-panel="summary">🗺️ Summary</button>
+          <button class="nav-btn" data-panel="suggestions">
+            💡 Suggestions
+          </button>
           <button class="nav-btn" data-panel="chapters">📝 Chapters</button>
           <button class="nav-btn" data-panel="recall">🔍 Ask Memory</button>
+          <button class="nav-btn" data-panel="threads">🧵 Loose Ends</button>
         </nav>
-
         <div class="sidebar-footer">
           <small>Powered by Cognee memory</small>
         </div>
       </aside>
 
-      <!-- Main panel -->
       <main class="main-panel">
-        <!-- CHAT PANEL -->
         <div id="panel-chat" class="panel active">
           <div id="messages-list" class="messages-list">
             <div class="empty-state">
@@ -75,11 +69,10 @@
             <button id="send-btn" class="btn-primary">Send</button>
           </div>
           <div class="memory-note">
-            💡 Every message is remembered by the AI — ask for a summary anytime
+            💡 Every message is remembered by the AI
           </div>
         </div>
 
-        <!-- SUMMARY PANEL -->
         <div id="panel-summary" class="panel hidden">
           <div class="panel-header">
             <h3>Story Summary</h3>
@@ -89,13 +82,38 @@
           </div>
           <div id="summary-content" class="prose-content">
             <div class="empty-state">
-              Click "Refresh from memory" to generate a summary of your story so
-              far.
+              Click "Refresh from memory" to generate a summary.
             </div>
           </div>
         </div>
 
-        <!-- CHAPTERS PANEL -->
+        <div id="panel-suggestions" class="panel hidden">
+          <div class="panel-header">
+            <h3>Story Suggestions</h3>
+          </div>
+          <p class="recall-hint">
+            Let the AI suggest directions based on your story memory.
+          </p>
+          <div class="suggestion-types">
+            <button class="suggestion-btn active" data-type="plot">
+              🗺️ Plot
+            </button>
+            <button class="suggestion-btn" data-type="character">
+              👤 Character
+            </button>
+            <button class="suggestion-btn" data-type="twist">🌀 Twist</button>
+            <button class="suggestion-btn" data-type="ending">🏁 Ending</button>
+          </div>
+          <button
+            id="get-suggestions-btn"
+            class="btn-primary"
+            style="margin: 12px 0"
+          >
+            ✨ Generate Suggestions
+          </button>
+          <div id="suggestions-content" class="prose-content hidden"></div>
+        </div>
+
         <div id="panel-chapters" class="panel hidden">
           <div class="panel-header">
             <h3>Chapters</h3>
@@ -103,8 +121,6 @@
               ✨ Draft New Chapter
             </button>
           </div>
-
-          <!-- Draft form (hidden until button clicked) -->
           <div id="draft-form" class="draft-form hidden">
             <input
               id="chapter-number-input"
@@ -123,7 +139,6 @@
             </button>
             <button id="cancel-draft-btn" class="btn-secondary">Cancel</button>
           </div>
-
           <div id="chapters-list" class="chapters-list">
             <div class="empty-state">
               No chapters yet — draft your first one!
@@ -131,11 +146,8 @@
           </div>
         </div>
 
-        <!-- RECALL / ASK MEMORY PANEL -->
         <div id="panel-recall" class="panel hidden">
-          <div class="panel-header">
-            <h3>Ask Your Story Memory</h3>
-          </div>
+          <div class="panel-header"><h3>Ask Your Story Memory</h3></div>
           <p class="recall-hint">
             Ask anything about your story — characters, plot points, decisions
             you've made.
@@ -150,10 +162,23 @@
           </div>
           <div id="recall-answer" class="prose-content hidden"></div>
         </div>
+
+        <div id="panel-threads" class="panel hidden">
+          <div class="panel-header">
+            <h3>Loose Ends</h3>
+            <button id="refresh-threads-btn" class="btn-secondary">
+              Find loose ends
+            </button>
+          </div>
+          <p class="recall-hint">
+            Unresolved plot threads and character arcs the story hasn't
+            addressed yet.
+          </p>
+          <div id="threads-content" class="prose-content hidden"></div>
+        </div>
       </main>
     </div>
 
-    <!-- Loading overlay -->
     <div id="loading-overlay" class="loading-overlay hidden">
       <div class="spinner"></div>
       <p id="loading-text">Thinking...</p>

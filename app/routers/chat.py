@@ -13,10 +13,6 @@ from app.schemas import (
 router = APIRouter(prefix="/api", tags=["chat"])
 
 
-# ─────────────────────────────────────────────
-# USER ENDPOINTS
-# ─────────────────────────────────────────────
-
 # Create a new user (you or your friend registers by name)
 @router.post("/users", response_model=UserResponse)
 async def create_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
@@ -40,10 +36,6 @@ async def get_users(db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
-# ─────────────────────────────────────────────
-# STORY ROOM ENDPOINTS
-# ─────────────────────────────────────────────
-
 # Create a story room
 @router.post("/rooms", response_model=StoryRoomResponse)
 async def create_room(payload: StoryRoomCreate, db: AsyncSession = Depends(get_db)):
@@ -60,10 +52,6 @@ async def get_rooms(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(StoryRoom).order_by(StoryRoom.created_at))
     return result.scalars().all()
 
-
-# ─────────────────────────────────────────────
-# MESSAGE ENDPOINTS
-# ─────────────────────────────────────────────
 
 # Send a message to a story room
 # This saves it to Postgres — Cognee ingestion happens separately

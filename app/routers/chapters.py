@@ -10,15 +10,9 @@ from groq import AsyncGroq
 
 router = APIRouter(prefix="/api", tags=["chapters"])
 
-# Groq client for chapter generation
+
 groq_client = AsyncGroq(api_key=os.getenv("LLM_API_KEY"))
 
-
-# ─────────────────────────────────────────────
-# DRAFT A CHAPTER
-# Pulls story context from Cognee graph, then
-# uses Groq to generate a chapter draft
-# ─────────────────────────────────────────────
 
 @router.post("/rooms/{room_id}/draft-chapter")
 async def draft_chapter(
@@ -30,7 +24,7 @@ async def draft_chapter(
     if not room:
         raise HTTPException(status_code=404, detail="Story room not found")
 
-    # Step 1: Pull structured story context from Cognee graph
+    
     print(f"[Chapter Draft] Pulling story context for room {room_id}...")
     context = await get_story_context_for_chapter(
         room_id=room_id,
@@ -64,7 +58,7 @@ Write approximately 400-600 words for this draft."""
         f"Make it compelling and consistent with everything we've discussed about our story."
     )
 
-    # Step 3: Generate the chapter with Groq
+  
     print(f"[Chapter Draft] Generating chapter with Groq...")
     response = await groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -78,7 +72,6 @@ Write approximately 400-600 words for this draft."""
 
     draft_content = response.choices[0].message.content
 
-    # Step 4: Save the draft to Postgres
     chapter = Chapter(
         room_id=room_id,
         chapter_number=payload.chapter_number,
@@ -92,14 +85,9 @@ Write approximately 400-600 words for this draft."""
 
     return {
         "chapter": ChapterResponse.model_validate(chapter),
-        "context_used": context  # Include so authors can see what context was pulled
+        "context_used": context 
     }
 
-
-# ─────────────────────────────────────────────
-# SAVE / FINALIZE A CHAPTER
-# Authors edit the draft and save the final version
-# ─────────────────────────────────────────────
 
 @router.put("/rooms/{room_id}/chapters/{chapter_id}", response_model=ChapterResponse)
 async def save_chapter(
@@ -120,11 +108,6 @@ async def save_chapter(
     await db.flush()
     await db.refresh(chapter)
     return chapter
-
-
-# ─────────────────────────────────────────────
-# GET ALL CHAPTERS FOR A ROOM
-# ─────────────────────────────────────────────
 
 @router.get("/rooms/{room_id}/chapters", response_model=list[ChapterResponse])
 async def get_chapters(room_id: str, db: AsyncSession = Depends(get_db)):

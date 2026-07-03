@@ -4,19 +4,10 @@ from sqlalchemy import String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
-# ─────────────────────────────────────────────
-# Helper: generate a UUID string as primary key
-# ─────────────────────────────────────────────
+
 def generate_uuid():
     return str(uuid.uuid4())
 
-
-# ─────────────────────────────────────────────
-# User
-# Represents each person using the app
-# (you and your friend — no passwords for now,
-# just a name-based simple identity)
-# ─────────────────────────────────────────────
 class User(Base):
     __tablename__ = "users"
 
@@ -27,18 +18,13 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationships
+   
     messages: Mapped[list["Message"]] = relationship("Message", back_populates="sender")
 
     def __repr__(self):
         return f"<User name={self.name}>"
 
 
-# ─────────────────────────────────────────────
-# StoryRoom
-# A shared workspace for one story
-# (you and your friend both write in the same room)
-# ─────────────────────────────────────────────
 class StoryRoom(Base):
     __tablename__ = "story_rooms"
 
@@ -49,19 +35,13 @@ class StoryRoom(Base):
         default=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationships
+
     messages: Mapped[list["Message"]] = relationship("Message", back_populates="room")
     chapters: Mapped[list["Chapter"]] = relationship("Chapter", back_populates="room")
 
     def __repr__(self):
         return f"<StoryRoom name={self.name}>"
 
-
-# ─────────────────────────────────────────────
-# Message
-# A single chat message in a story room
-# This is the raw text that gets fed into Cognee
-# ─────────────────────────────────────────────
 class Message(Base):
     __tablename__ = "messages"
 
@@ -75,7 +55,6 @@ class Message(Base):
         default=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationships
     room: Mapped["StoryRoom"] = relationship("StoryRoom", back_populates="messages")
     sender: Mapped["User"] = relationship("User", back_populates="messages")
 
@@ -83,12 +62,6 @@ class Message(Base):
         return f"<Message sender={self.sender_id} content={self.content[:40]}>"
 
 
-# ─────────────────────────────────────────────
-# Chapter
-# A drafted/saved chapter for the story
-# The agent generates a draft, you both edit it,
-# and the final version gets saved here
-# ─────────────────────────────────────────────
 class Chapter(Base):
     __tablename__ = "chapters"
 
@@ -108,7 +81,6 @@ class Chapter(Base):
         onupdate=lambda: datetime.now(timezone.utc)
     )
 
-    # Relationship
     room: Mapped["StoryRoom"] = relationship("StoryRoom", back_populates="chapters")
 
     def __repr__(self):
