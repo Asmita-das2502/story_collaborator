@@ -411,6 +411,7 @@ textarea:focus {
   border-radius: 3px;
 }
 
+/* suggestion type */
 .suggestion-types {
   display: flex;
   gap: 8px;

@@ -113,6 +113,7 @@ async def recall(room_id: str, body: dict, db: AsyncSession = Depends(get_db)):
     if not query:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
  
+ 
     answer = await recall_story_context(room_id=room_id, query=query)
     return {"query": query, "answer": answer, "room_id": room_id}
  

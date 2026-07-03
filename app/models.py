@@ -83,5 +83,6 @@ class Chapter(Base):
 
     room: Mapped["StoryRoom"] = relationship("StoryRoom", back_populates="chapters")
 
+
     def __repr__(self):
         return f"<Chapter number={self.chapter_number} title={self.title} draft={self.is_draft}>"

@@ -13,7 +13,6 @@ router = APIRouter(prefix="/api", tags=["chapters"])
 
 groq_client = AsyncGroq(api_key=os.getenv("LLM_API_KEY"))
 
-
 @router.post("/rooms/{room_id}/draft-chapter")
 async def draft_chapter(
     room_id: str,
@@ -120,4 +119,5 @@ async def get_chapters(room_id: str, db: AsyncSession = Depends(get_db)):
         .where(Chapter.room_id == room_id)
         .order_by(Chapter.chapter_number)
     )
+    
     return result.scalars().all()

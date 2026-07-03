@@ -50,4 +50,5 @@ async def story_suggestions(
         room_id=room_id,
         suggestion_type=suggestion_type
     )
+    
     return {"suggestions": suggestions, "suggestion_type": suggestion_type, "room_id": room_id}

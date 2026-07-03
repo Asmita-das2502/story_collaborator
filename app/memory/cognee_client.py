@@ -170,6 +170,7 @@ async def get_story_suggestions(room_id: str, suggestion_type: str = "plot") -> 
 
         return _extract_text(results) or "Add more story details first so I can make meaningful suggestions!"
 
+
     except Exception as e:
         print(f"[Cognee] Story suggestions failed: {e}")
         return f"Could not generate suggestions: {str(e)}"

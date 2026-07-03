@@ -278,4 +278,4 @@ _"I built this because my friend and I needed it."_
 
 ## 🤖 AI Tools
 
-## This project was built faster and more efficiently with the assistance of AI engineering tools ( ex- claude).
+This project was built faster and more efficiently with the assistance of AI engineering tools ( ex- claude).

@@ -60,6 +60,7 @@ class ChapterResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class SummaryResponse(BaseModel):
     summary: str
     room_id: str
