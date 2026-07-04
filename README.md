@@ -134,10 +134,6 @@ http://localhost:8000
 
 ---
 
-## Tech Stack
-
----
-
 ## What's Next
 
 - **Room authentication** - password-protect story rooms so only invited collaborators can access a room's content and memory graph. Right now rooms are identified by name only, which is fine for private use but not for sharing over a public deployment
