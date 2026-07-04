@@ -201,29 +201,17 @@ Your friend can join the **same room name** from any device and share the same m
 
 ---
 
-## 🗂️ Project Structure
+## images
 
-```
-story-collaborator/
-├── app/
-│   ├── main.py              # FastAPI app entrypoint
-│   ├── database.py          # SQLAlchemy async engine
-│   ├── models.py            # DB models: User, StoryRoom, Message, Chapter
-│   ├── schemas.py           # Pydantic request/response schemas
-│   ├── routers/
-│   │   ├── chat.py          # Chat, users, rooms, recall endpoints
-│   │   ├── summary.py       # Summary, suggestions, threads endpoints
-│   │   └── chapters.py      # Chapter draft and save endpoints
-│   └── memory/
-│       └── cognee_client.py # All Cognee operations (single source of truth)
-├── static/
-│   ├── index.html           # Single-page app UI
-│   ├── style.css            # Dark theme styling
-│   └── app.js               # Frontend logic
-├── docker-compose.yml       # PostgreSQL container
-├── .env                     # Environment variables (not committed)
-└── README.md
-```
+![Chat with memory](Screenshots/Chatpanel.png)
+
+![Summary](Screenshots/summarypanel.png)
+
+![Ask memory](Screenshots/AskMemory.png)
+
+![Chapter Draft](Screenshots/ChapterDraft.png)
+
+![Suggestions panel](Screenshots/Suggestionspanal.png)
 
 ---
 
