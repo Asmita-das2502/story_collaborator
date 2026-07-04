@@ -1,4 +1,4 @@
-# 📖 Story Collaborator
+# 📖 co-write
 
 ### A collaborative story writing tool powered by Cognee's persistent memory
 
