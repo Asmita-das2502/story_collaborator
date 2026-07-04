@@ -262,9 +262,12 @@ Most memory applications use Cognee as a "smarter vector store" — add text, se
 ## 🔮 What's Next
 
 - **Real-time sync** between collaborators using WebSockets
-- **Export to PDF/EPUB** — turn your drafted chapters into a readable document
-- **Timeline view** — visualize your story's plot graph visually
-- **Feedback loop** — use `cognee.improve()` to reinforce successful story decisions
+- **Export to PDF/EPUB** - turn your drafted chapters into a readable document
+- **Timeline view** - visualize your story's plot graph visually
+- **cognee.improve()** - feed author feedbadk on chapter drafts back into the memory graph so the agent learns your preferences and writing style over time.
+- **cognee.forget()** -let authors surgically remove plot decisions they've abandoned,keeping the graph clean and relevant as the story evolves.
+- **Room authentication** - password-protect story rooms so only invited collaborators can access a room's content and memory graph. Right now rooms are identified by name only, which is fine for private use but not for sharing over a public deployment
+- **Invite system** - share a room via a unique invite link rather than just a room name, so your co-author can join securely without guessing the room name
 
 ---
 
