@@ -203,7 +203,7 @@ Your friend can join the **same room name** from any device and share the same m
 
 ## images
 
-![Chat with memory](Screenshots/Chatpanel.png)
+![Chat with memory](Screenshots/chatpanel.png)
 
 ![Summary](Screenshots/summarypanel.png)
 
@@ -211,7 +211,7 @@ Your friend can join the **same room name** from any device and share the same m
 
 ![Chapter Draft](Screenshots/ChapterDraft.png)
 
-![Suggestions panel](Screenshots/Suggestionspanal.png)
+![Suggestions panel](Screenshots/Suggestionspanel.png)
 
 ---
 
