@@ -10,7 +10,7 @@
 
 My friend and I are co-writing a novel from different cities. Our entire creative process lived in WhatsApp, hundreds of messages with no memory and structure. Every wrting session started with 20 minutes of catching up on what we'd already decided.
 
-Story Collaborator fixes this by giving our story a persistent, graph-powered memory using Cognee.
+co-write fixes this by giving our story a persistent, graph-powered memory using Cognee.
 
 ---
 
