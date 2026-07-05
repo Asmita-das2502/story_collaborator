@@ -10,8 +10,8 @@
   --bg: #0f0e17;
   --surface: #1a1825;
   --surface2: #252336;
-  --accent: #a78bfa;
-  --accent2: #7c3aed;
+  --accent: #8cba38;
+  --accent2: #a59933;
   --text: #fffffe;
   --text-muted: #a9a9b3;
   --border: #2e2b45;
@@ -200,6 +200,7 @@ textarea:focus {
   font-size: 0.75rem;
 }
 
+/* ── MAIN PANEL ── */
 .main-panel {
   flex: 1;
   display: flex;
@@ -232,6 +233,7 @@ textarea:focus {
   font-weight: 600;
 }
 
+/* ── CHAT PANEL ── */
 .messages-list {
   flex: 1;
   overflow-y: auto;
@@ -300,6 +302,7 @@ textarea:focus {
   white-space: pre-wrap;
 }
 
+/* ── CHAPTERS PANEL ── */
 .draft-form {
   display: flex;
   gap: 10px;
@@ -346,11 +349,11 @@ textarea:focus {
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* ── RECALL PANEL ── */
 .recall-hint {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -364,6 +367,8 @@ textarea:focus {
 .recall-input-row input {
   flex: 1;
 }
+
+/* ── EMPTY STATE ── */
 .empty-state {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -371,6 +376,7 @@ textarea:focus {
   padding: 40px 20px;
 }
 
+/* ── LOADING OVERLAY ── */
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -400,6 +406,7 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
+/* ── SCROLLBAR ── */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -411,7 +418,7 @@ textarea:focus {
   border-radius: 3px;
 }
 
-/* suggestion type */
+/* ── SUGGESTION TYPE BUTTONS ── */
 .suggestion-types {
   display: flex;
   gap: 8px;
@@ -436,4 +443,68 @@ textarea:focus {
   background: var(--accent2);
   border-color: var(--accent2);
   color: white;
+}
+
+/* ── CHAPTER MODAL ── */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 14, 23, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+  padding: 20px;
+}
+
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 16px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.chapter-editor {
+  flex: 1;
+  min-height: 400px;
+  resize: vertical;
+  font-family: "Georgia", serif;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 16px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.chapter-card {
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.chapter-card:hover {
+  border-color: var(--accent);
 }

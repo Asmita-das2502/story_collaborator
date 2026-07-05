@@ -8,12 +8,10 @@ from app.routers import chat , summary, chapters
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create DB tables if they don't exist yet
     print("Starting up — creating tables if needed...")
     await create_tables()
     print("✅ Database ready.")
     yield
-    # Shutdown: nothing to clean up for now
     print("Shutting down.")
 
 

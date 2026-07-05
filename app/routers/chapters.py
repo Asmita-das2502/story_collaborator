@@ -4,14 +4,14 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models import StoryRoom, Chapter
 from app.schemas import ChapterDraftRequest, ChapterSaveRequest, ChapterResponse
-from app.memory.cognee_client import get_story_context_for_chapter
+from app.memory.cognee_client import get_story_context_for_chapter, improve_from_chapter
 import os
 from groq import AsyncGroq
 
 router = APIRouter(prefix="/api", tags=["chapters"])
 
-
 groq_client = AsyncGroq(api_key=os.getenv("LLM_API_KEY"))
+
 
 @router.post("/rooms/{room_id}/draft-chapter")
 async def draft_chapter(
@@ -23,18 +23,16 @@ async def draft_chapter(
     if not room:
         raise HTTPException(status_code=404, detail="Story room not found")
 
-    
     print(f"[Chapter Draft] Pulling story context for room {room_id}...")
     context = await get_story_context_for_chapter(
         room_id=room_id,
         chapter_number=payload.chapter_number
     )
 
-    # Step 2: Build a detailed prompt using the graph context
     chapter_title = payload.title or f"Chapter {payload.chapter_number}"
 
     system_prompt = f"""You are a creative writing assistant helping two authors write their story.
-Your job is to draft Chapter {payload.chapter_number}: "{chapter_title}" based on everything 
+Your job is to draft Chapter {payload.chapter_number}: "{chapter_title}" based on everything
 the authors have discussed so far.
 
 Here is what you know about the story:
@@ -49,15 +47,14 @@ TONE, GENRE AND SETTING:
 {context['tone_setting']}
 
 Write in a style consistent with what the authors have discussed.
-The chapter should feel natural, engaging, and true to the story world they've built.
+The chapter should feel natural, engaging, and true to the story world they have built.
 Write approximately 400-600 words for this draft."""
 
     user_prompt = (
         f"Please write Chapter {payload.chapter_number}: \"{chapter_title}\". "
-        f"Make it compelling and consistent with everything we've discussed about our story."
+        f"Make it compelling and consistent with everything we have discussed about our story."
     )
 
-  
     print(f"[Chapter Draft] Generating chapter with Groq...")
     response = await groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -66,7 +63,7 @@ Write approximately 400-600 words for this draft."""
             {"role": "user", "content": user_prompt}
         ],
         max_tokens=1000,
-        temperature=0.8  # Slightly creative for storytelling
+        temperature=0.8
     )
 
     draft_content = response.choices[0].message.content
@@ -76,7 +73,7 @@ Write approximately 400-600 words for this draft."""
         chapter_number=payload.chapter_number,
         title=payload.title,
         content=draft_content,
-        is_draft=True  # Marked as draft until authors review and finalize
+        is_draft=True
     )
     db.add(chapter)
     await db.flush()
@@ -84,7 +81,7 @@ Write approximately 400-600 words for this draft."""
 
     return {
         "chapter": ChapterResponse.model_validate(chapter),
-        "context_used": context 
+        "context_used": context
     }
 
 
@@ -106,7 +103,17 @@ async def save_chapter(
 
     await db.flush()
     await db.refresh(chapter)
+
+
+    if not payload.is_draft:
+        print(f"[Cognee] Chapter finalized — running improve()...")
+        await improve_from_chapter(
+            room_id=room_id,
+            chapter_content=payload.content
+        )
+
     return chapter
+
 
 @router.get("/rooms/{room_id}/chapters", response_model=list[ChapterResponse])
 async def get_chapters(room_id: str, db: AsyncSession = Depends(get_db)):
@@ -119,5 +126,4 @@ async def get_chapters(room_id: str, db: AsyncSession = Depends(get_db)):
         .where(Chapter.room_id == room_id)
         .order_by(Chapter.chapter_number)
     )
-    
     return result.scalars().all()

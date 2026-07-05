@@ -49,7 +49,6 @@ async def get_db():
         finally:
             await session.close()
 
-# Call this once at app startup to create all tables
 async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

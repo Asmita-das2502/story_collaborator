@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Story Collaborator</title>
+    <title>co-write</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <div id="setup-screen" class="screen">
       <div class="setup-card">
-        <h1>📖 Story Collaborator</h1>
+        <h1>📖 co-write</h1>
         <p class="subtitle">Write together. Remember everything.</p>
         <div class="form-group">
-          <label>Your Name</label>
+          <label>Your name</label>
           <input id="user-name-input" type="text" placeholder="e.g. Asmita" />
         </div>
         <div class="form-group">
@@ -39,14 +39,12 @@
           <span id="user-badge"></span>
         </div>
         <nav class="sidebar-nav">
-          <button class="nav-btn active" data-panel="chat">💬 Chat</button>
-          <button class="nav-btn" data-panel="summary">🗺️ Summary</button>
-          <button class="nav-btn" data-panel="suggestions">
-            💡 Suggestions
-          </button>
-          <button class="nav-btn" data-panel="chapters">📝 Chapters</button>
-          <button class="nav-btn" data-panel="recall">🔍 Ask Memory</button>
-          <button class="nav-btn" data-panel="threads">🧵 Loose Ends</button>
+          <button class="nav-btn active" data-panel="chat">Chat</button>
+          <button class="nav-btn" data-panel="summary">Summary</button>
+          <button class="nav-btn" data-panel="suggestions">Suggestions</button>
+          <button class="nav-btn" data-panel="chapters">Chapters</button>
+          <button class="nav-btn" data-panel="recall">Ask Memory</button>
+          <button class="nav-btn" data-panel="threads">Loose Ends</button>
         </nav>
         <div class="sidebar-footer">
           <small>Powered by Cognee memory</small>
@@ -54,6 +52,7 @@
       </aside>
 
       <main class="main-panel">
+        <!-- CHAT -->
         <div id="panel-chat" class="panel active">
           <div id="messages-list" class="messages-list">
             <div class="empty-state">
@@ -76,10 +75,23 @@
         <div id="panel-summary" class="panel hidden">
           <div class="panel-header">
             <h3>Story Summary</h3>
-            <button id="refresh-summary-btn" class="btn-secondary">
-              Refresh from memory
-            </button>
+            <div style="display: flex; gap: 8px">
+              <button id="refresh-summary-btn" class="btn-secondary">
+                Refresh from memory
+              </button>
+              <button
+                id="clear-memory-btn"
+                class="btn-secondary"
+                style="color: #f87171"
+              >
+                🗑️ Clear Memory
+              </button>
+            </div>
           </div>
+          <p class="recall-hint">
+            The AI will summarize your story based on the knowledge graph it has
+            built from your messages and chapters.
+          </p>
           <div id="summary-content" class="prose-content">
             <div class="empty-state">
               Click "Refresh from memory" to generate a summary.
@@ -92,7 +104,7 @@
             <h3>Story Suggestions</h3>
           </div>
           <p class="recall-hint">
-            Let the AI suggest directions based on your story memory.
+            AI suggestions based on your story's knowledge graph.
           </p>
           <div class="suggestion-types">
             <button class="suggestion-btn active" data-type="plot">
@@ -109,7 +121,7 @@
             class="btn-primary"
             style="margin: 12px 0"
           >
-            ✨ Generate Suggestions
+            Generate Suggestions
           </button>
           <div id="suggestions-content" class="prose-content hidden"></div>
         </div>
@@ -118,7 +130,7 @@
           <div class="panel-header">
             <h3>Chapters</h3>
             <button id="draft-chapter-btn" class="btn-primary">
-              ✨ Draft New Chapter
+              Draft New Chapter
             </button>
           </div>
           <div id="draft-form" class="draft-form hidden">
@@ -139,6 +151,10 @@
             </button>
             <button id="cancel-draft-btn" class="btn-secondary">Cancel</button>
           </div>
+          <p class="recall-hint">
+            It's use for drafting chapters and finalizing them into the
+            knowledge graph
+          </p>
           <div id="chapters-list" class="chapters-list">
             <div class="empty-state">
               No chapters yet — draft your first one!
@@ -148,10 +164,7 @@
 
         <div id="panel-recall" class="panel hidden">
           <div class="panel-header"><h3>Ask Your Story Memory</h3></div>
-          <p class="recall-hint">
-            Ask anything about your story — characters, plot points, decisions
-            you've made.
-          </p>
+          <p class="recall-hint">ask anything about your story.</p>
           <div class="recall-input-row">
             <input
               id="recall-input"
@@ -163,6 +176,7 @@
           <div id="recall-answer" class="prose-content hidden"></div>
         </div>
 
+        <!-- LOOSE ENDS -->
         <div id="panel-threads" class="panel hidden">
           <div class="panel-header">
             <h3>Loose Ends</h3>
@@ -170,13 +184,33 @@
               Find loose ends
             </button>
           </div>
-          <p class="recall-hint">
-            Unresolved plot threads and character arcs the story hasn't
-            addressed yet.
-          </p>
+          <p class="recall-hint">find unresolved threads.</p>
           <div id="threads-content" class="prose-content hidden"></div>
         </div>
       </main>
+    </div>
+
+    <div id="chapter-modal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-chapter-title">Chapter</h3>
+          <button id="modal-close-btn" class="btn-secondary">✕ Close</button>
+        </div>
+        <textarea
+          id="modal-chapter-content"
+          class="chapter-editor"
+          rows="20"
+        ></textarea>
+        <div class="modal-footer">
+          <button id="modal-save-draft-btn" class="btn-secondary">
+            Save as Draft
+          </button>
+          <button id="modal-finalize-btn" class="btn-primary">Finalize</button>
+        </div>
+        <p class="recall-hint" style="margin-top: 8px">
+          Finalizing feeds this chapter back into the knowledge graph
+        </p>
+      </div>
     </div>
 
     <div id="loading-overlay" class="loading-overlay hidden">

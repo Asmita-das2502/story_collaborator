@@ -1,6 +1,11 @@
 let currentUser = null;
 let currentRoom = null;
 let allUsers = {};
+let currentChapter = null; // for modal
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
 
 function showLoading(text = "Thinking...") {
   document.getElementById("loading-text").textContent = text;
@@ -29,7 +34,10 @@ async function api(method, path, body = null) {
   return res.json();
 }
 
+// ─────────────────────────────────────────────
 // SETUP
+// ─────────────────────────────────────────────
+
 document.getElementById("enter-btn").addEventListener("click", async () => {
   const userName = document.getElementById("user-name-input").value.trim();
   const roomName = document.getElementById("room-name-input").value.trim();
@@ -72,6 +80,10 @@ document.getElementById("room-name-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter") document.getElementById("enter-btn").click();
 });
 
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+
 document.querySelectorAll(".nav-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document
@@ -100,7 +112,8 @@ async function loadMessages() {
 function renderMessages(messages) {
   const list = document.getElementById("messages-list");
   if (messages.length === 0) {
-    list.innerHTML = '<div class="empty-state">No messages yet!</div>';
+    list.innerHTML =
+      '<div class="empty-state">No messages yet — start your story discussion!</div>';
     return;
   }
   list.innerHTML = messages
@@ -108,9 +121,13 @@ function renderMessages(messages) {
       const isMe = msg.sender_id === currentUser.id;
       const senderName = allUsers[msg.sender_id] || "Unknown";
       const cogneeTag = msg.fed_to_cognee
-        ? '<div class="message-cognee">✓ remembered</div>'
-        : "";
-      return `<div class="message-bubble ${isMe ? "mine" : "theirs"}"><div class="message-sender">${senderName}</div><div>${msg.content}</div>${cogneeTag}</div>`;
+        ? '<div class="message-cognee">✓ remembered </div>'
+        : '<div class="message-cognee" style="color:#f87171;">not yet remembered</div>';
+      return `<div class="message-bubble ${isMe ? "mine" : "theirs"}">
+      <div class="message-sender">${senderName}</div>
+      <div>${msg.content}</div>
+      ${cogneeTag}
+    </div>`;
     })
     .join("");
   list.scrollTop = list.scrollHeight;
@@ -129,7 +146,7 @@ async function sendMessage() {
   const content = input.value.trim();
   if (!content) return;
   input.value = "";
-  showLoading("Sending and remembering...");
+  showLoading("Sending and remembering via cognee.remember()...");
   try {
     await api("POST", "/api/messages", {
       room_id: currentRoom.id,
@@ -148,7 +165,7 @@ async function sendMessage() {
 document
   .getElementById("refresh-summary-btn")
   .addEventListener("click", async () => {
-    showLoading("Reading your story memory...");
+    showLoading("Reading story memory via cognee.search()...");
     try {
       const data = await api("GET", `/api/rooms/${currentRoom.id}/summary`);
       const el = document.getElementById("summary-content");
@@ -161,9 +178,66 @@ document
     }
   });
 
+document
+  .getElementById("clear-memory-btn")
+  .addEventListener("click", async () => {
+    if (
+      !confirm(
+        "This will clear the Cognee knowledge graph for this story room. Your messages will be preserved but the AI memory will reset. Continue?",
+      )
+    )
+      return;
+    showLoading("Clearing memory via cognee.forget()...");
+    try {
+      await api("DELETE", `/api/rooms/${currentRoom.id}/memory`);
+      alert(
+        " Memory cleared! The knowledge graph has been reset . Your messages are still here.",
+      );
+      document.getElementById("summary-content").textContent = "";
+    } catch (err) {
+      console.error("Clear memory failed:", err);
+      alert("Failed to clear memory: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });
+
+let activeSuggestionType = "plot";
+
+document.querySelectorAll(".suggestion-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document
+      .querySelectorAll(".suggestion-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeSuggestionType = btn.dataset.type;
+  });
+});
+
+document
+  .getElementById("get-suggestions-btn")
+  .addEventListener("click", async () => {
+    showLoading("Generating suggestions from story graph...");
+    try {
+      const data = await api(
+        "GET",
+        `/api/rooms/${currentRoom.id}/suggestions?suggestion_type=${activeSuggestionType}`,
+      );
+      const el = document.getElementById("suggestions-content");
+      el.textContent = data.suggestions;
+      el.classList.remove("hidden");
+    } catch (err) {
+      console.error("Suggestions failed:", err);
+      alert("Error: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });
+
 document.getElementById("draft-chapter-btn").addEventListener("click", () => {
   document.getElementById("draft-form").classList.toggle("hidden");
 });
+
 document.getElementById("cancel-draft-btn").addEventListener("click", () => {
   document.getElementById("draft-form").classList.add("hidden");
 });
@@ -180,7 +254,7 @@ document
       alert("Please enter a valid chapter number.");
       return;
     }
-    showLoading("Pulling story memory and drafting chapter...");
+    showLoading("Pulling story context from graph and drafting chapter...");
     try {
       await api("POST", `/api/rooms/${currentRoom.id}/draft-chapter`, {
         room_id: currentRoom.id,
@@ -209,22 +283,97 @@ async function loadChapters() {
 function renderChapters(chapters) {
   const list = document.getElementById("chapters-list");
   if (chapters.length === 0) {
-    list.innerHTML = '<div class="empty-state">No chapters yet!</div>';
+    list.innerHTML =
+      '<div class="empty-state">No chapters yet — draft your first one!</div>';
     return;
   }
   list.innerHTML = chapters
     .map(
       (ch) => `
-    <div class="chapter-card">
+    <div class="chapter-card" onclick="openChapterModal(${JSON.stringify(ch).replace(/"/g, "&quot;")})">
       <div class="chapter-card-header">
         <div class="chapter-card-title">Chapter ${ch.chapter_number}${ch.title ? ": " + ch.title : ""}</div>
-        ${ch.is_draft ? '<span class="chapter-draft-badge">Draft</span>' : '<span class="chapter-draft-badge" style="background:#34d399">Final</span>'}
+        ${
+          ch.is_draft
+            ? '<span class="chapter-draft-badge">Draft — click to edit & finalize</span>'
+            : '<span class="chapter-draft-badge" style="background:#34d399">✓ Final — cognee.improve() ran</span>'
+        }
       </div>
       <div class="chapter-preview">${ch.content}</div>
     </div>`,
     )
     .join("");
 }
+
+function openChapterModal(chapter) {
+  currentChapter = chapter;
+  document.getElementById("modal-chapter-title").textContent =
+    `Chapter ${chapter.chapter_number}${chapter.title ? ": " + chapter.title : ""}`;
+  document.getElementById("modal-chapter-content").value = chapter.content;
+  document.getElementById("chapter-modal").classList.remove("hidden");
+}
+
+document.getElementById("modal-close-btn").addEventListener("click", () => {
+  document.getElementById("chapter-modal").classList.add("hidden");
+  currentChapter = null;
+});
+
+document
+  .getElementById("modal-save-draft-btn")
+  .addEventListener("click", async () => {
+    if (!currentChapter) return;
+    const content = document.getElementById("modal-chapter-content").value;
+    showLoading("Saving draft...");
+    try {
+      await api(
+        "PUT",
+        `/api/rooms/${currentRoom.id}/chapters/${currentChapter.id}`,
+        {
+          content,
+          is_draft: true,
+          title: currentChapter.title,
+        },
+      );
+      document.getElementById("chapter-modal").classList.add("hidden");
+      await loadChapters();
+    } catch (err) {
+      alert("Failed to save: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });
+
+document
+  .getElementById("modal-finalize-btn")
+  .addEventListener("click", async () => {
+    if (!currentChapter) return;
+    if (
+      !confirm(
+        "Finalizing will mark this chapter as complete and  reinforce the knowledge graph with this chapter's content. Continue?",
+      )
+    )
+      return;
+    const content = document.getElementById("modal-chapter-content").value;
+    showLoading("Finalizing chapter and running cognee.improve()...");
+    try {
+      await api(
+        "PUT",
+        `/api/rooms/${currentRoom.id}/chapters/${currentChapter.id}`,
+        {
+          content,
+          is_draft: false,
+          title: currentChapter.title,
+        },
+      );
+      document.getElementById("chapter-modal").classList.add("hidden");
+      alert("Chapter finalized! updated the knowledge graph.");
+      await loadChapters();
+    } catch (err) {
+      alert("Failed to finalize: " + err.message);
+    } finally {
+      hideLoading();
+    }
+  });
 
 document
   .querySelector('[data-panel="chapters"]')
@@ -238,7 +387,7 @@ document.getElementById("recall-input").addEventListener("keydown", (e) => {
 async function askMemory() {
   const query = document.getElementById("recall-input").value.trim();
   if (!query) return;
-  showLoading("Searching story memory...");
+  showLoading("Searching story memory ");
   try {
     const data = await api("POST", `/api/rooms/${currentRoom.id}/recall`, {
       query,
@@ -253,53 +402,13 @@ async function askMemory() {
   }
 }
 
-let activeSuggestionType = "plot";
-
-document.querySelectorAll(".suggestion-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document
-      .querySelectorAll(".suggestion-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    activeSuggestionType = btn.dataset.type;
-  });
-});
-
-document
-  .getElementById("get-suggestions-btn")
-  .addEventListener("click", async () => {
-    showLoading("Thinking about your story...");
-    try {
-      const data = await api(
-        "GET",
-        `/api/rooms/${currentRoom.id}/suggestions?suggestion_type=${activeSuggestionType}`,
-      );
-      const el = document.getElementById("suggestions-content");
-      if (!el) {
-        alert("suggestions-content element not found!");
-        return;
-      }
-      el.textContent = data.suggestions;
-      el.classList.remove("hidden");
-    } catch (err) {
-      console.error("Suggestions failed:", err);
-      alert("Error: " + err.message);
-    } finally {
-      hideLoading();
-    }
-  });
-// Threads-content
 document
   .getElementById("refresh-threads-btn")
   .addEventListener("click", async () => {
-    showLoading("Analysing story threads...");
+    showLoading("Analysing story threads ");
     try {
       const data = await api("GET", `/api/rooms/${currentRoom.id}/threads`);
       const el = document.getElementById("threads-content");
-      if (!el) {
-        alert("threads-content element not found!");
-        return;
-      }
       el.textContent = data.threads;
       el.classList.remove("hidden");
     } catch (err) {
